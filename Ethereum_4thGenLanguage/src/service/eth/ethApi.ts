@@ -1,6 +1,6 @@
 import { Web3 } from "web3";
 import { authApi } from "../interfaceApi/authApi";
-import { CreateContractInput } from "../interfaceApi/types";
+import { CreateContractInput, TransactionInput } from "../interfaceApi/types";
 import { systemAddress } from "../../helpers/Constants";
 
 export const createcontract = async (
@@ -19,21 +19,16 @@ export const checkMetamask = async (price: number) => {
       const balance = await web3.eth.getBalance(accounts[0]);
       const balanceInEther = web3.utils.fromWei(balance, "ether");
       const priceInWei = web3.utils.toWei("0.001", "ether");
-      console.log(balanceInEther);
+      console.log("currContract");
+
       if (+balanceInEther < price) {
         return { status: "lte" };
       } else {
-        const transaction = await web3.eth.sendTransaction({
-          from: accounts[0],
-          to: systemAddress,
-          value: priceInWei,
-          gas: 1000000,
-        });
-        console.log(transaction);
         return {
           status: "success",
           account: accounts[0],
-          transaction: transaction,
+          price: priceInWei,
+          web3: web3,
         };
       }
     } catch (error: any) {
@@ -46,4 +41,17 @@ export const checkMetamask = async (price: number) => {
   } else {
     return { status: "no_metamask" };
   }
+};
+
+export const sendTransaction = async (data: TransactionInput) => {
+  let web3 = data.web3;
+  let from = data.from;
+  let price = data.price;
+  const transaction = await web3.eth.sendTransaction({
+    from: from,
+    to: systemAddress,
+    value: price,
+    gas: 1000000,
+  });
+  return transaction;
 };

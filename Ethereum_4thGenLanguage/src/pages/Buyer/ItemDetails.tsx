@@ -12,13 +12,16 @@ import Button from "../../components/shared/Button";
 import { validate } from "../../helpers/Validator";
 import { valuesValidator } from "../../helpers/methods";
 import { toast } from "react-toastify";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ContractInput } from "../../interfaces/contractDataTypes";
 import { getSellerByID } from "../../service/interfaceApi/sellerApi";
 import BuyContractDialog from "./BuyContractDialog";
 import { addBuyer, loadContract } from "../../service/eth/contractApi";
-import { checkMetamask } from "../../service/eth/ethApi";
-import { AddBuyerInput } from "../../service/interfaceApi/types";
+import { checkMetamask, sendTransaction } from "../../service/eth/ethApi";
+import {
+  AddBuyerInput,
+  TransactionInput,
+} from "../../service/interfaceApi/types";
 
 interface ItemDetailsProps {}
 const ItemDetails: React.FC<ItemDetailsProps> = ({}) => {
@@ -46,13 +49,7 @@ const ItemDetails: React.FC<ItemDetailsProps> = ({}) => {
     queryFn: () => getItemByID(itemID ? +itemID : 1),
   });
 
-  const {
-    data: currSeller,
-    isLoading: isLoadingSeller,
-    isSuccess: fetchedSeller,
-    refetch: refetchSeller,
-    isError: errorSeller,
-  } = useQuery({
+  const { data: currSeller, isError: errorSeller } = useQuery({
     queryKey: ["getSeller"],
     queryFn: () => getSellerByID(currItem?.sellerID),
     enabled: currItem ? true : false,
@@ -90,10 +87,17 @@ const ItemDetails: React.FC<ItemDetailsProps> = ({}) => {
     transferDate: currContract?.date,
   });
 
+  const { mutate: transact, isPending: loadingTransaction } = useMutation({
+    mutationFn: (data: TransactionInput) => {
+      return sendTransaction(data);
+    },
+    onSuccess: () => {
+      setIsOpenContract(false);
+    },
+  });
   const { data: balanceResponse } = useQuery({
     queryKey: ["getAccData"],
     queryFn: () => checkMetamask(currContract?.price ? currContract.price : 0),
-    enabled: currContract ? true : false,
   });
 
   const { mutate: buy, isPending: loadingBuy } = useMutation({
@@ -127,11 +131,16 @@ const ItemDetails: React.FC<ItemDetailsProps> = ({}) => {
         });
       } else if (balanceResponse?.status === "success") {
         let data: AddBuyerInput = {
-          contractID: 1,
+          contractID: currContract?.id ? currContract.id : 1,
           contractName: currContract?.name ? currContract.name : "",
           steps: currContract?.steps ? currContract.steps : [],
           values: values,
         };
+        transact({
+          from: balanceResponse.account,
+          price: balanceResponse.price,
+          web3: balanceResponse.web3,
+        });
         buy(data);
       }
     } else {
@@ -216,7 +225,7 @@ const ItemDetails: React.FC<ItemDetailsProps> = ({}) => {
                 currContract ? setIsOpenContract(false) : {}
               }
               values={values}
-              loadingBuy={loadingBuy}
+              loadingBuy={loadingBuy || loadingTransaction}
               errorBuy={false}
               currContract={currContract}
               handleChange={handleChange}

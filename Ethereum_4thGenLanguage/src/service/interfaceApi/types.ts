@@ -50,3 +50,9 @@ export interface AddBuyerInput {
   contractID: number;
   contractName: string;
 }
+
+export interface TransactionInput {
+  web3: any;
+  price: any;
+  from: any;
+}
