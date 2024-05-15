@@ -5,7 +5,7 @@ import StepperComponent from "../../components/shared/StepperComponent";
 import TextBox from "../../components/shared/TextBox";
 import LargeButton from "../../components/shared/LargeButton";
 import { validate } from "../../helpers/Validator";
-import { User, UserRole } from "../../interfaces/dataTypes";
+import { OracleScopes, User, UserRole } from "../../interfaces/dataTypes";
 import {
   emailRegExp,
   ethRegExp,
@@ -14,17 +14,26 @@ import {
 import {
   registerSeller,
   uploadIdentityPhotos,
-} from "../../service/api/sellerApi";
-import { ToggleButton, ToggleButtonGroup } from "@mui/material";
-import { registerBuyer } from "../../service/api/buyerApi";
+} from "../../service/interfaceApi/sellerApi";
+import {
+  FormControlLabel,
+  Radio,
+  RadioGroup,
+  ToggleButton,
+  ToggleButtonGroup,
+} from "@mui/material";
+import { registerBuyer } from "../../service/interfaceApi/buyerApi";
+import { registerOracle } from "../../service/eth/oracleApi";
 
 interface RegisterProps {}
 const Register: React.FC<RegisterProps> = ({}) => {
   const nav = useNavigate();
   const [loading, setLoading] = useState<boolean>(false);
-
   const CreateAccount = () => {
     const [username, setUsername] = useState<string>("");
+    const [fullname, setFullname] = useState<string>("");
+    const [scope, setScope] = useState<OracleScopes>("ids");
+
     const [password, setPassword] = useState<string>("");
     const [repeatedPassword, setRepeatedPassword] = useState<string>("");
     const [email, setEmail] = useState<string>("");
@@ -35,6 +44,12 @@ const Register: React.FC<RegisterProps> = ({}) => {
     ) => {
       let value = event.target.value;
       setUsername(value);
+    };
+    const handleChangeFullname = (
+      event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+      let value = event.target.value;
+      setFullname(value);
     };
     const handleChangePassword = (
       event: React.ChangeEvent<HTMLInputElement>
@@ -58,6 +73,9 @@ const Register: React.FC<RegisterProps> = ({}) => {
     ) => {
       setRole(newRole);
     };
+    const handleChangeScope = (event: React.ChangeEvent<HTMLInputElement>) => {
+      setScope(event.target.value as OracleScopes);
+    };
 
     const toggleStyle = {
       "&.MuiToggleButton-primary	": {
@@ -76,9 +94,19 @@ const Register: React.FC<RegisterProps> = ({}) => {
     return {
       jsx: (
         <div className="flex flex-col items-center justify-center space-y-5">
+          <TextBox
+            label="Full Legal Name"
+            type="text"
+            error={!validate([fullname], [10]) && fullname != ""}
+            value={fullname}
+            width="w-[620px]"
+            helperText="Full name required"
+            onChange={handleChangeFullname}
+          />
           <div className="flex items-center justify-center space-x-4">
             <TextBox
               label="Username"
+              width="w-[300px]"
               type="text"
               error={!validate([username], [4]) && username != ""}
               value={username}
@@ -90,6 +118,7 @@ const Register: React.FC<RegisterProps> = ({}) => {
               type="email"
               error={!validate([email], [4], [emailRegExp]) && email != ""}
               onChange={handleChangeEmail}
+              width="w-[300px]"
               helperText={"Please enter valid email."}
               value={email}
             />
@@ -102,19 +131,21 @@ const Register: React.FC<RegisterProps> = ({}) => {
               error={
                 !validate([password], [10], [passwordRegExp]) && password != ""
               }
+              width="w-[300px]"
               helperText={"Min. 10 characters, 1 uppercase, 1 symbol."}
               onChange={handleChangePassword}
             />
             <TextBox
               label="Re-enter your password"
               type="password"
+              width="w-[300px]"
               onChange={handleChangeRepeatedPassword}
               value={repeatedPassword}
               error={password !== repeatedPassword && repeatedPassword != ""}
               helperText={"Passwords don't match."}
             />
           </div>
-          <div className="py-6">
+          <div className="py-6 flex flex-col items-center gap-y-4">
             <ToggleButtonGroup
               color="primary"
               exclusive
@@ -127,7 +158,56 @@ const Register: React.FC<RegisterProps> = ({}) => {
               <ToggleButton sx={toggleStyle} value="buyer">
                 Buyer
               </ToggleButton>
+              <ToggleButton sx={toggleStyle} value="oracle">
+                Oracle
+              </ToggleButton>
             </ToggleButtonGroup>{" "}
+            {role === "oracle" && (
+              <div className="ml-10 flex gap-x-4 items-center">
+                <label>Verification Scope:</label>
+                <RadioGroup
+                  aria-labelledby="demo-radio-buttons-group-label"
+                  defaultValue="ids"
+                  name="radio-buttons-group"
+                  onChange={handleChangeScope}
+                  row
+                >
+                  <FormControlLabel
+                    value="ids"
+                    control={
+                      <Radio
+                        sx={{
+                          "&.MuiRadio-root": { color: "white" },
+                        }}
+                      />
+                    }
+                    label="User Official IDs"
+                  />
+                  <FormControlLabel
+                    value="item"
+                    control={
+                      <Radio
+                        sx={{
+                          "&.MuiRadio-root": { color: "white" },
+                        }}
+                      />
+                    }
+                    label="Item Authenticity"
+                  />
+                  <FormControlLabel
+                    value="steps"
+                    control={
+                      <Radio
+                        sx={{
+                          "&.MuiRadio-root": { color: "white" },
+                        }}
+                      />
+                    }
+                    label="Contract Steps & Escrow"
+                  />
+                </RadioGroup>
+              </div>
+            )}
           </div>
         </div>
       ),
@@ -139,15 +219,19 @@ const Register: React.FC<RegisterProps> = ({}) => {
         ) &&
           password === repeatedPassword &&
           role === "buyer") ||
-        role === "seller",
-      data: { username, email, password, role },
+        role === "seller" ||
+        role === "oracle",
+      data: { username, email, password, role, scope, fullname },
     };
   };
+  let createAccResult = CreateAccount();
 
   const SetupEthData = () => {
     const [ethAddress, setEthAddress] = useState<string>("");
-    const [repeatedEthAddress, setRepeatedEthAddress] = useState<string>("");
+    const { role } = createAccResult.data;
 
+    const [repeatedEthAddress, setRepeatedEthAddress] = useState<string>("");
+    const [stake, setStake] = useState<number>();
     const handleChangeEthAddress = (
       event: React.ChangeEvent<HTMLInputElement>
     ) => {
@@ -160,30 +244,48 @@ const Register: React.FC<RegisterProps> = ({}) => {
       let value = event.target.value;
       setRepeatedEthAddress(value);
     };
+    const handleChangeStake = (event: React.ChangeEvent<HTMLInputElement>) => {
+      let value = +event.target.value;
+      setStake(value);
+    };
 
     return {
       jsx: (
-        <div className="flex items-center justify-center space-x-4">
-          <TextBox
-            label="Ethereum address"
-            type=""
-            value={ethAddress}
-            onChange={handleChangeEthAddress}
-            helperText="Enter valid ethereum address."
-            error={
-              ethAddress != "" && !validate([ethAddress], [40], [ethRegExp])
-            }
-          />
-          <TextBox
-            label="Re-enter your ethereum address"
-            type=""
-            error={
-              repeatedEthAddress != "" && repeatedEthAddress !== ethAddress
-            }
-            value={repeatedEthAddress}
-            helperText="Inputs don't match."
-            onChange={handleChangeRepeatedEthAddress}
-          />
+        <div className="flex flex-col gap-y-4">
+          <div className="flex items-center justify-center space-x-4">
+            <TextBox
+              label="Ethereum address"
+              type=""
+              value={ethAddress}
+              onChange={handleChangeEthAddress}
+              helperText="Enter valid ethereum address."
+              error={
+                ethAddress != "" && !validate([ethAddress], [40], [ethRegExp])
+              }
+            />
+            <TextBox
+              label="Re-enter your ethereum address"
+              type=""
+              error={
+                repeatedEthAddress != "" && repeatedEthAddress !== ethAddress
+              }
+              value={repeatedEthAddress}
+              helperText="Inputs don't match."
+              onChange={handleChangeRepeatedEthAddress}
+            />
+          </div>
+          {role != "buyer" && (
+            <div className="flex items-center justify-center space-x-4">
+              <TextBox
+                label="Stake in ETH"
+                type="number"
+                value={stake}
+                onChange={handleChangeStake}
+                helperText="Enter a min. stake in ETH"
+                error={false}
+              />
+            </div>
+          )}
         </div>
       ),
       validated:
@@ -192,7 +294,7 @@ const Register: React.FC<RegisterProps> = ({}) => {
           [40, 40],
           [ethRegExp, ethRegExp]
         ) && ethAddress === repeatedEthAddress,
-      data: { ethAddress },
+      data: { ethAddress, stake },
     };
   };
 
@@ -221,7 +323,7 @@ const Register: React.FC<RegisterProps> = ({}) => {
           <div className="flex justify-center">
             <LargeButton
               icon="whiteUpload"
-              hoverIcon="purpleUpload"
+              hoverIcon="whiteUpload"
               onClick={() => onClickUpload()}
               width={900}
               subTitle="It must be of type government social card or passport - It still needs to be verified"
@@ -249,7 +351,7 @@ const Register: React.FC<RegisterProps> = ({}) => {
             {selectedFiles.length !== 0 && (
               <div className="flex space-x-2">
                 <img
-                  src={`/svgs/${isHoveredX ? "purpleX" : "x"}.svg`}
+                  src={`/svgs/${isHoveredX ? "whiteX" : "x"}.svg`}
                   onMouseEnter={() => setIsHoveredX(true)}
                   onMouseLeave={() => setIsHoveredX(false)}
                   onClick={() => setSelectedFiles([])}
@@ -264,7 +366,6 @@ const Register: React.FC<RegisterProps> = ({}) => {
       data: { selectedFiles },
     };
   };
-  let createAccResult = CreateAccount();
   let setupEthDataResult = SetupEthData();
   let uploadIdentityResult = UploadIdentityProof();
 
@@ -288,22 +389,66 @@ const Register: React.FC<RegisterProps> = ({}) => {
 
   const register = async () => {
     setLoading(true);
-    const { username, email, password, role } = createAccResult.data;
-    const { ethAddress } = setupEthDataResult.data;
+    const { username, email, password, role, scope, fullname } =
+      createAccResult.data;
+    const { ethAddress, stake } = setupEthDataResult.data;
     const getHashes = await uploadPhotos();
-    const seller: User = {
-      username: username,
-      email: email,
-      password: password,
-      ethAddress: ethAddress,
-      role: role,
-      identityPhotosHash: getHashes,
-    };
-    const content = [seller];
+    let sellerUser: User;
+    let sellerContent;
+    if (role === "seller") {
+      sellerUser = {
+        username: username,
+        stake: stake,
+        fullName: fullname,
+        email: email,
+        password: password,
+        ethAddress: ethAddress,
+        role: role,
+        identityPhotosHash: getHashes,
+      };
+      sellerContent = [sellerUser];
+    }
+
+    let buyerUser: User;
+    let buyerContent;
+    if (role === "buyer") {
+      buyerUser = {
+        username: username,
+        fullName: fullname,
+        email: email,
+        password: password,
+        ethAddress: ethAddress,
+        role: role,
+        identityPhotosHash: getHashes,
+      };
+      buyerContent = [buyerUser];
+    }
+    let oracleUser: User;
+    let contentOracle;
+    if (role === "oracle") {
+      oracleUser = {
+        username: username,
+        fullName: fullname,
+        email: email,
+        password: password,
+        ethAddress: ethAddress,
+        role: role,
+        identityPhotosHash: getHashes,
+        stake: stake,
+        scope: scope,
+      };
+      contentOracle = [oracleUser];
+    }
+
     try {
       let registered;
-      if (role === "seller") registered = await registerSeller(content);
-      else registered = await registerBuyer(content);
+      if (role === "seller") {
+        registered = await registerSeller(sellerContent ? sellerContent : []);
+      } else if (role === "buyer") {
+        registered = await registerBuyer(buyerContent ? buyerContent : []);
+      } else {
+        registered = await registerOracle(contentOracle ? contentOracle : []);
+      }
       nav("/");
     } catch (error) {
       console.log(error);

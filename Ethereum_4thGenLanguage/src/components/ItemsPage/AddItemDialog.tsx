@@ -15,9 +15,11 @@ interface AddItemDialogProps {
   onChangeItemPrice: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onChangeItemDescription: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onChangeItemImg: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onChangeItemLocation: (event: React.ChangeEvent<HTMLInputElement>) => void;
   itemName: string;
   itemDescription: string;
   itemPrice?: number;
+  itemLocation: string;
   itemImgRef: any;
 }
 
@@ -29,9 +31,11 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({
   onClickUpload,
   onChangeItemName,
   onChangeItemPrice,
+  onChangeItemLocation,
   onChangeItemDescription,
   onChangeItemImg,
   itemName,
+  itemLocation,
   itemPrice,
   itemDescription,
   itemImgRef,
@@ -72,6 +76,15 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({
               onChange={onChangeItemPrice}
             />
           </div>
+          <div className="flex gap-x-4">
+            <TextBox
+              label="Item Location"
+              type="text"
+              value={itemLocation}
+              width="w-[515px]"
+              onChange={onChangeItemLocation}
+            />
+          </div>
           <div className="flex gap-x-4 justify-center">
             <TextBox
               label="Item description"
@@ -84,17 +97,18 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({
               className="hidden"
               type="file"
               accept="image/*"
+              multiple
               ref={itemImgRef}
               onChange={onChangeItemImg}
             />
           </div>
           <LargeButton
-            title="Upload item image"
+            title="Upload item image(s)"
             subTitle="Add an item image to be displayed to the buyer later"
             icon="upload"
             onClick={onClickUpload}
             hoverIcon="purpleUpload"
-            width={400}
+            width={550}
           />
           <div className="flex justify-center items-center mt-10 gap-x-4">
             <Button light={true} loading={loadingAdd} onClick={onClickAdd}>

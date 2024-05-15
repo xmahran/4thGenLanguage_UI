@@ -13,6 +13,9 @@ const initialState: UserState = {
     ethAddress: "",
     role: "",
     password: "",
+    stake: undefined,
+    fullName: "",
+    scope: "",
     identityPhotosHash: [],
   },
 };

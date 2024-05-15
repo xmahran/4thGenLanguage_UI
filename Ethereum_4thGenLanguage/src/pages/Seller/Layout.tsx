@@ -4,7 +4,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { clearUser, setUser } from "../../store/features/userSlice";
 import { useQuery } from "@tanstack/react-query";
-import { getSellerByID } from "../../service/api/sellerApi";
+import { getSellerByID } from "../../service/interfaceApi/sellerApi";
 import Loader from "../../components/shared/Loader";
 import { useEffect } from "react";
 import ErrorState from "../../components/shared/ErrorState";

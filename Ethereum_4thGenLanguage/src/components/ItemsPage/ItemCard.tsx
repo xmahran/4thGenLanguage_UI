@@ -14,7 +14,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, onClick, oracle }) => {
       <div className="flex flex-col justify-center items-center">
         <div className="hover:scale-125 transition ease-in-out duration-300 w-[300px] p-4">
           <Image
-            src={`${pinataURL}/${item.itemImgHash}`}
+            src={`${pinataURL}/${item.itemImgHash[0]}`}
             width={250}
             height={350}
             loading={"lazy"}

@@ -6,9 +6,11 @@ export const validate = (
   let validated = true;
 
   args.forEach((record, index) => {
-    if (record.length <= reqLength[index]) {
-      validated = false;
-      return;
+    if (record) {
+      if (record.length <= reqLength[index]) {
+        validated = false;
+        return;
+      }
     }
     if (contains) {
       if (contains[index]) {

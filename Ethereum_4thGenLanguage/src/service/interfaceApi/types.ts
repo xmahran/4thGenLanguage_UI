@@ -1,4 +1,4 @@
-import { Event } from "../../interfaces/contractDataTypes";
+import { ContractInput, Event, Step } from "../../interfaces/contractDataTypes";
 import { Item, User, UserRole } from "../../interfaces/dataTypes";
 
 export interface GenereicResponse {
@@ -36,4 +36,17 @@ export interface AddStepInput {
   stepProcess: string;
   party: UserRole;
   ethAddress: string;
+}
+
+export interface CreateContractInput {
+  sellerID?: number;
+  steps: Step[];
+  values: ContractInput;
+  username: string;
+}
+export interface AddBuyerInput {
+  values: ContractInput;
+  steps: Step[];
+  contractID: number;
+  contractName: string;
 }

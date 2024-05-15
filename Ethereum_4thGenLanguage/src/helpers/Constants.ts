@@ -4,3 +4,4 @@ export const emailRegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const serverURL = "http://localhost:3000/api";
 export const pinataURL = "https://gateway.pinata.cloud/ipfs";
 export const contractAddress = "0x6490Dc1C7d586950a7Ae422E831B1e69D69dbD9D";
+export const systemAddress = "0xB1Be0fC64A5eB38B939dC7041475Ea774b2c0173";

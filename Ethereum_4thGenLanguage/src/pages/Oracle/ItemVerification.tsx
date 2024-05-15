@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import Header from "../../components/shared/Header";
-import { getAllItems } from "../../service/api/itemsApi";
+import { getAllItems } from "../../service/interfaceApi/itemsApi";
 import ItemCard from "../../components/ItemsPage/ItemCard";
 import Loader from "../../components/shared/Loader";
 import ErrorState from "../../components/shared/ErrorState";

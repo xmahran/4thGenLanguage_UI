@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import Loader from "../../components/shared/Loader";
 import { useEffect } from "react";
 import ErrorState from "../../components/shared/ErrorState";
-import { getBuyerByID } from "../../service/api/buyerApi";
+import { getBuyerByID } from "../../service/interfaceApi/buyerApi";
 
 interface MainProps {}
 

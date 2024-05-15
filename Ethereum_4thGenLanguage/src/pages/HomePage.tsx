@@ -11,16 +11,10 @@ const HomePage: React.FC<HomePageProps> = () => {
           <label className="text-xl font-bold">Welcome</label>
           <Login />
         </div>
-        <a
-          href="/oracle"
-          className="absolute bottom-0 left-0 right-0 p-4 text-center text-sm underline"
-        >
-          Oracle
-        </a>
       </div>
 
       <div className="h-auto overflow-y-auto w-[70%]">
-        <Header title="Featured Items" />
+        <Header title="Featured Items" search />
       </div>
     </div>
   );

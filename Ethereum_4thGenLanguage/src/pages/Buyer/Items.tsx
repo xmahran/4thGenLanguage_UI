@@ -3,14 +3,13 @@ import EmptyState from "../../components/shared/EmptyState";
 import ErrorState from "../../components/shared/ErrorState";
 import Loader from "../../components/shared/Loader";
 import { useQuery } from "@tanstack/react-query";
-import { getAllItems } from "../../service/api/itemsApi";
+import { getAllItems } from "../../service/interfaceApi/itemsApi";
 import Header from "../../components/shared/Header";
-import { useState } from "react";
-import ItemDetailsDialog from "./ItemDetailsDialog";
+import { useNavigate } from "react-router-dom";
 
 interface ItemsProps {}
 const Items: React.FC<ItemsProps> = () => {
-  const [isOpenItem, setIsOpenItem] = useState<boolean>(false);
+  const nav = useNavigate();
   const {
     data: items,
     isLoading: isLoadingItems,
@@ -20,12 +19,7 @@ const Items: React.FC<ItemsProps> = () => {
     queryKey: ["getAllItems"],
     queryFn: () => getAllItems(),
   });
-  const onClickCloseDialog = () => {
-    setIsOpenItem(false);
-  };
-  const onClickBuyDialog = () => {
-    setIsOpenItem(false);
-  };
+
   return (
     <div>
       <Header title="Items" />
@@ -53,12 +47,9 @@ const Items: React.FC<ItemsProps> = () => {
           <div className="grid grid-cols-3 justify-center items-center">
             {items?.map((item, index) => (
               <div key={index} className="flex justify-center">
-                <ItemCard item={item} onClick={() => setIsOpenItem(true)} />
-                <ItemDetailsDialog
-                  isOpen={isOpenItem}
+                <ItemCard
                   item={item}
-                  onClickBuy={onClickBuyDialog}
-                  onClickClose={onClickCloseDialog}
+                  onClick={() => nav(item.id ? item.id + "" : 1 + "")}
                 />
               </div>
             ))}

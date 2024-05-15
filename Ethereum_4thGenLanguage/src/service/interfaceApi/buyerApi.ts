@@ -31,6 +31,8 @@ export const loginBuyer = async (
     email: userNode.email,
     username: userNode.username,
     password: userNode.password,
+    fullName: userNode.fullName,
+    stake: userNode.stake,
     ethAddress: userNode.ethAddress,
     identityPhotosHash: userNode.identityPhotosHash,
     role: "buyer",

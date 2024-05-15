@@ -3,7 +3,7 @@ import Header from "../../components/shared/Header";
 import Loader from "../../components/shared/Loader";
 import ErrorState from "../../components/shared/ErrorState";
 import EmptyState from "../../components/shared/EmptyState";
-import { getIdentities } from "../../service/api/sellerApi";
+import { getIdentities } from "../../service/interfaceApi/sellerApi";
 import IdentityCard from "../../components/Oracle/IdentityCard";
 import { verifyID } from "../../service/eth/oracleApi";
 import { verifyHash } from "../../service/eth/contractApi";

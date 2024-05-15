@@ -35,6 +35,8 @@ export const loginSeller = async (
     email: userNode.email,
     username: userNode.username,
     password: userNode.password,
+    fullName: userNode.fullName,
+    stake: userNode.stake,
     ethAddress: userNode.ethAddress,
     identityPhotosHash: userNode.identityPhotosHash,
     role: "seller",
@@ -55,6 +57,7 @@ export const getSellerItems = async (sellerID: any): Promise<Item[]> => {
     items.push({
       id: itemID,
       sellerID: itemContent.sellerID,
+      itemLocation: itemContent.itemLocation,
       itemName: itemContent.itemName,
       itemDescription: itemContent.itemDescription,
       itemPrice: itemContent.itemPrice,

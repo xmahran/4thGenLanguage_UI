@@ -5,23 +5,24 @@ import { useNavigate } from "react-router-dom";
 import { validate } from "../../helpers/Validator";
 import { emailRegExp, passwordRegExp } from "../../helpers/Constants";
 import { useMutation } from "@tanstack/react-query";
-import { loginSeller } from "../../service/api/sellerApi";
+import { loginSeller } from "../../service/interfaceApi/sellerApi";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { setUser } from "../../store/features/userSlice";
 import { useAppDispatch } from "../../store/store";
 import { UserRole } from "../../interfaces/dataTypes";
-import { loginBuyer } from "../../service/api/buyerApi";
+import { loginBuyer } from "../../service/interfaceApi/buyerApi";
+import { FormControlLabel, Radio, RadioGroup } from "@mui/material";
+import { loginOracle } from "../../service/eth/oracleApi";
 
 interface LoginProps {}
 const Login: React.FC<LoginProps> = ({}) => {
   const nav = useNavigate();
-  const [loading, setLoading] = useState<boolean>(false);
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<boolean>(false);
   const dispatch = useAppDispatch();
-  const [role, setRole] = useState<UserRole>();
+  const [role, setRole] = useState<UserRole>("buyer");
 
   const handleChangeEmail = (event: React.ChangeEvent<HTMLInputElement>) => {
     let value = event.target.value;
@@ -31,11 +32,17 @@ const Login: React.FC<LoginProps> = ({}) => {
     let value = event.target.value;
     setPassword(value);
   };
-  const { mutate: mutateLogin } = useMutation({
+  const handleChangeRole = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRole(event.target.value as UserRole);
+  };
+  const { mutate: mutateLogin, isPending: loadingLogin } = useMutation({
     mutationKey: ["loginCall"],
     mutationFn: (loginReqBody: any) => {
       if (role === "seller") return loginSeller(loginReqBody);
-      else return loginBuyer(loginReqBody);
+      else if (role === "buyer") return loginBuyer(loginReqBody);
+      else {
+        return loginOracle(loginReqBody);
+      }
     },
     onError: (error) => {
       console.log(error);
@@ -43,10 +50,8 @@ const Login: React.FC<LoginProps> = ({}) => {
         position: "top-center",
         className: "toast-message",
       });
-      setLoading(false);
     },
     onSuccess: (response) => {
-      setLoading(false);
       if (!response.token) {
         setError(true);
         toast.error("Invalid credentials", {
@@ -54,7 +59,11 @@ const Login: React.FC<LoginProps> = ({}) => {
           className: "toast-message",
         });
       } else {
-        role === "seller" ? nav("/main/seller") : nav("/main/buyer");
+        role === "seller"
+          ? nav("/main/seller")
+          : role === "buyer"
+          ? nav("/main/buyer")
+          : nav("/main/oracle");
         let currUser = response.userNode;
         dispatch(setUser(currUser));
         localStorage.setItem("token", response.token);
@@ -66,32 +75,12 @@ const Login: React.FC<LoginProps> = ({}) => {
     },
   });
 
-  const loginAsSeller = () => {
+  const login = () => {
     if (
       email != "" &&
       password != "" &&
       validate([email, password], [1, 10], [emailRegExp, passwordRegExp])
     ) {
-      setRole("seller");
-      setLoading(true);
-      mutateLogin({ email: email, password: password });
-    } else {
-      setError(true);
-      toast.error("Invalid input format", {
-        position: "top-center",
-        className: "toast-message",
-      });
-    }
-  };
-
-  const loginAsBuyer = () => {
-    if (
-      email != "" &&
-      password != "" &&
-      validate([email, password], [1, 10], [emailRegExp, passwordRegExp])
-    ) {
-      setRole("buyer");
-      setLoading(true);
       mutateLogin({ email: email, password: password });
     } else {
       setError(true);
@@ -119,36 +108,77 @@ const Login: React.FC<LoginProps> = ({}) => {
           value={password}
           onChange={handleChangePassword}
         />
+        <RadioGroup
+          aria-labelledby="demo-radio-buttons-group-label"
+          defaultValue="buyer"
+          name="radio-buttons-group"
+          onChange={handleChangeRole}
+          row
+        >
+          <FormControlLabel
+            value="buyer"
+            control={
+              <Radio
+                size="small"
+                sx={{
+                  "&.MuiRadio-root": { color: "white" },
+                }}
+              />
+            }
+            label="Buyer"
+          />
+          <FormControlLabel
+            value="seller"
+            control={
+              <Radio
+                size="small"
+                sx={{
+                  "&.MuiRadio-root": { color: "white" },
+                }}
+              />
+            }
+            label="Seller"
+          />
+          <FormControlLabel
+            value="oracle"
+            control={
+              <Radio
+                size="small"
+                sx={{
+                  "&.MuiRadio-root": { color: "white" },
+                }}
+              />
+            }
+            label="Oracle"
+          />
+        </RadioGroup>
       </div>
-      <div className="flex  flex-col justify-center space-y-4 mt-4">
-        <div className="flex space-x-2">
-          <Button
-            light={true}
-            loading={role === "buyer" ? loading : false}
-            width="w-[170px]"
-            onClick={() => loginAsBuyer()}
-          >
-            Login as Buyer
-          </Button>
-          <Button
+      <div className="flex space-x-2">
+        <Button
+          light={true}
+          loading={loadingLogin}
+          width="w-[170px]"
+          onClick={() => login()}
+        >
+          Login
+        </Button>
+        <Button
+          dark={true}
+          loading={false}
+          width="w-[170px]"
+          disabled={loadingLogin}
+          onClick={() => nav("/register")}
+        >
+          Register
+        </Button>
+        {/* <Button
             light={true}
             width="w-[170px]"
             loading={role === "seller" ? loading : false}
             onClick={() => loginAsSeller()}
           >
             Login as Seller
-          </Button>
-        </div>
-        <div className="mt-4">
-          <Button
-            dark={true}
-            loading={false}
-            disabled={loading}
-            onClick={() => nav("/register")}
-          >
-            Register
-          </Button>
-        </div>
+          </Button> */}
       </div>
     </div>
   );
