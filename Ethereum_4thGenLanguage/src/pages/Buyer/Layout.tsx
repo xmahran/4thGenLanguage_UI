@@ -71,7 +71,6 @@ const Layout: React.FC<MainProps> = ({}) => {
             items={[
               { title: "Home", path: "" },
               { title: "Contracts", path: "contracts" },
-              { title: "Complaints", path: "contracts" },
               { title: "Logout", path: "logout" },
             ]}
             onItemClick={handleItemClick}
