@@ -1,16 +1,16 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import Header from "../../components/shared/Header";
 import Loader from "../../components/shared/Loader";
 import ErrorState from "../../components/shared/ErrorState";
 import EmptyState from "../../components/shared/EmptyState";
 import { getIdentities } from "../../service/interfaceApi/sellerApi";
 import IdentityCard from "../../components/Oracle/IdentityCard";
-import { verifyID } from "../../service/eth/oracleApi";
-import { verifyHash } from "../../service/eth/contractApi";
+import { useNavigate } from "react-router-dom";
 
 interface IDVerificationProps {}
 
 const IDVerification: React.FC<IDVerificationProps> = () => {
+  const nav = useNavigate();
   const {
     data: identities,
     isLoading: isLoadingIdentity,
@@ -21,39 +21,15 @@ const IDVerification: React.FC<IDVerificationProps> = () => {
     queryFn: () => getIdentities(),
   });
 
-  const {
-    mutate: mutateVerifyID,
-    isError: isErrorVerifyID,
-    isPending: isLoadingVerifyID,
-  } = useMutation({
-    mutationFn: (hash: string) =>
-      verifyID({ hash: hash, updatedMetadata: { status: "VERIFIED" } }),
-  });
-  const {
-    mutate: mutateVerifyHash,
-    isError: isErrorVerifyHash,
-    isPending: isLoadingVerifyHash,
-  } = useMutation({
-    mutationFn: () =>
-      verifyHash({
-        oracleAddress: "",
-        oracleVerificationHash: "",
-        type: "seller",
-      }),
-  });
-  const oracleVerify = (hash: string) => {
-    mutateVerifyID(hash);
-    //  mutateVerifyHash();
-  };
   return (
-    <div>
+    <div className="w-[90%]">
       <Header title="User Identities" />
       <div className="py-10">
-        {isLoadingIdentity || isLoadingVerifyID || isLoadingVerifyHash ? (
+        {isLoadingIdentity ? (
           <div className="mt-[20%]">
             <Loader size={60} />
           </div>
-        ) : isErrorIdentity || isErrorVerifyID || isErrorVerifyHash ? (
+        ) : isErrorIdentity ? (
           <ErrorState
             title="An unknown error has occurred"
             subTitle="Retry the process"
@@ -63,7 +39,7 @@ const IDVerification: React.FC<IDVerificationProps> = () => {
         ) : identities?.length === 0 ? (
           <EmptyState
             title="No identities available"
-            subTitle="None of the users uploaded their identities"
+            subTitle="No user identities found to verify"
             buttonTitle="OK"
             loading={false}
             onClick={() => {}}
@@ -74,7 +50,7 @@ const IDVerification: React.FC<IDVerificationProps> = () => {
               <div key={index} className="flex justify-center">
                 <IdentityCard
                   identity={identity}
-                  onClick={() => oracleVerify(identity.imgHash)}
+                  onClick={() => nav(identity.username)}
                 />
               </div>
             ))}

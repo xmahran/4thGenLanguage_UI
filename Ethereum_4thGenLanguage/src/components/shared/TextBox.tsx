@@ -23,22 +23,22 @@ const TextBox: React.FC<TextBoxProps> = ({
   const textStyle = {
     "&.MuiTextField-root": {
       "&:hover .MuiOutlinedInput-notchedOutline": {
-        borderColor: "#7B1FA2",
+        borderColor: "#2196F3",
         borderRadius: "1.5rem",
       },
       "&:focus .MuiOutlinedInput-notchedOutline": {
-        borderColor: "#7B1FA2",
+        borderColor: "#2196F3",
         borderRadius: "1.5rem",
       },
       "&:focus-within .MuiOutlinedInput-notchedOutline": {
-        borderColor: "#7B1FA2",
+        borderColor: "#2196F3",
         borderRadius: "1.5rem",
       },
       "& .MuiOutlinedInput-notchedOutline": {
         borderColor: "transparent",
       },
       "& .MuiInputLabel-root": {
-        color: "white",
+        color: "#333333",
         fontFamily: "Raleway, sans-serif",
         fontSize: "0.875rem",
       },
@@ -67,8 +67,9 @@ const TextBox: React.FC<TextBoxProps> = ({
       required
       inputProps={{
         style: {
-          backgroundColor: "#1C1C1C",
-          color: "white",
+          backgroundColor: "#EAEAEA",
+          borderColor: "#DDDDDD",
+          color: "#333333",
           height: "20px",
           fontFamily: "Raleway, sans-serif",
           fontSize: "0.875rem",

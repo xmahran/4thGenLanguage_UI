@@ -1,16 +1,16 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import Header from "../../components/shared/Header";
-import { getAllItems } from "../../service/interfaceApi/itemsApi";
+import { getAllItemsOracle } from "../../service/interfaceApi/itemsApi";
 import ItemCard from "../../components/ItemsPage/ItemCard";
 import Loader from "../../components/shared/Loader";
 import ErrorState from "../../components/shared/ErrorState";
 import EmptyState from "../../components/shared/EmptyState";
-import { verifyItem } from "../../service/eth/oracleApi";
-import { verifyHash } from "../../service/eth/contractApi";
+import { useNavigate } from "react-router-dom";
 
 interface ItemVerificationProps {}
 
 const ItemVerification: React.FC<ItemVerificationProps> = () => {
+  const nav = useNavigate();
   const {
     data: items,
     isLoading: isLoadingItems,
@@ -18,42 +18,18 @@ const ItemVerification: React.FC<ItemVerificationProps> = () => {
     refetch: refetchItems,
   } = useQuery({
     queryKey: ["getAllItems"],
-    queryFn: () => getAllItems(),
+    queryFn: () => getAllItemsOracle(),
   });
-  const {
-    mutate: mutateVerifyItem,
-    isError: isErrorVerifyItem,
-    isPending: isLoadingVerifyItem,
-  } = useMutation({
-    mutationFn: (hash: string) =>
-      verifyItem({ hash: hash, updatedMetadata: { status: "VERIFIED" } }),
-  });
-  const {
-    mutate: mutateVerifyHash,
-    isError: isErrorVerifyHash,
-    isPending: isLoadingVerifyHash,
-  } = useMutation({
-    mutationFn: () =>
-      verifyHash({
-        oracleAddress: "",
-        oracleVerificationHash: "",
-        type: "item",
-      }),
-  });
-  const verify = (hash: string) => {
-    mutateVerifyItem(hash);
-    mutateVerifyHash();
-  };
 
   return (
     <div>
       <Header title="Items" />
       <div className="py-10">
-        {isLoadingItems || isLoadingVerifyItem || isLoadingVerifyHash ? (
+        {isLoadingItems ? (
           <div className="mt-[20%]">
             <Loader size={60} />
           </div>
-        ) : isErrorItems || isErrorVerifyItem || isErrorVerifyHash ? (
+        ) : isErrorItems ? (
           <ErrorState
             title="An unknown error has occurred"
             subTitle="Retry the process"
@@ -63,7 +39,7 @@ const ItemVerification: React.FC<ItemVerificationProps> = () => {
         ) : items?.length === 0 ? (
           <EmptyState
             title="No items available"
-            subTitle="None of the sellers uploaded any item"
+            subTitle="No items were found to verify"
             buttonTitle="OK"
             loading={false}
             onClick={() => {}}
@@ -74,8 +50,7 @@ const ItemVerification: React.FC<ItemVerificationProps> = () => {
               <div key={index} className="flex justify-center">
                 <ItemCard
                   item={item}
-                  onClick={() => verify(item.itemImgHash)}
-                  oracle={"item"}
+                  onClick={() => nav(item.id ? item.id + "" : 1 + "")}
                 />
               </div>
             ))}

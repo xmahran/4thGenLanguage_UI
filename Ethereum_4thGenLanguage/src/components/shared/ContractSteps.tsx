@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import StdTextBox from "./StdTextBox";
 import { Step } from "../../interfaces/contractDataTypes";
+import ImgButton from "./ImgButton";
 
 interface ContractStepsProps {
   currSteps: Step[];
@@ -57,8 +58,9 @@ const ContractSteps: React.FC<ContractStepsProps> = ({
               <label>followed by</label>
 
               {index === steps.length - 1 && type === "seller" && (
-                <img
-                  src="/svgs/plus.svg"
+                <ImgButton
+                  hoveredImg="bluePlus"
+                  img="darkPlus"
                   className="cursor-pointer"
                   onClick={handleAddStep}
                 />
@@ -85,9 +87,9 @@ const ContractSteps: React.FC<ContractStepsProps> = ({
               <label>followed by</label>
 
               {index === steps.length - 1 && type === "seller" && (
-                <img
-                  src="/svgs/plus.svg"
-                  className="cursor-pointer"
+                <ImgButton
+                  hoveredImg="bluePlus"
+                  img="darkPlus"
                   onClick={handleAddStep}
                 />
               )}

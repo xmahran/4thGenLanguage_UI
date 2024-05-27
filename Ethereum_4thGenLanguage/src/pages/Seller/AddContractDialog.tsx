@@ -28,9 +28,9 @@ const AddContractDialog: React.FC<AddContractDialog> = ({
 }) => {
   const dialogStyle = {
     "&.MuiDialog-paper": {
-      background: "linear-gradient(180deg, #1c1c1c, #44055f, #000000)",
+      background: "#F7F7F7",
       borderRadius: "1.5rem",
-      color: "white",
+      color: "#333333",
       height: "760px",
       width: "1500px",
       maxWidth: "none",
@@ -45,7 +45,7 @@ const AddContractDialog: React.FC<AddContractDialog> = ({
       }}
     >
       <div className="flex justify-center gap-x-2 mt-4">
-        <img src="/svgs/contract.svg" className="mb-1 w-7 h-7" />
+        <img src="/svgs/darkContract.svg" className="mb-1 w-7 h-7" />
         <label className="text-2xl">Create Contract</label>
       </div>
       <DialogContent>

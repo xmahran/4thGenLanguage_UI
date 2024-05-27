@@ -19,6 +19,7 @@ const Header: React.FC<HeaderProps> = ({
   title,
   add,
   onClickAdd,
+  width,
   info,
   search,
   refresh,
@@ -28,7 +29,7 @@ const Header: React.FC<HeaderProps> = ({
   const user = useAppSelector((state) => state.user.user);
 
   return (
-    <Box borderBottom={1} borderColor="grey.300" padding={2} width={1200}>
+    <Box borderBottom={1} borderColor="grey.300" padding={2} width={"90%"}>
       <div className="flex justify-between">
         {title.includes("/") ? (
           <h1 className="text-start text-3xl mt-3">
@@ -49,16 +50,16 @@ const Header: React.FC<HeaderProps> = ({
         )}
         {add && (
           <ImgButton
-            hoveredImg="purplePlus"
-            img="plus"
+            hoveredImg="bluePlus"
+            img="darkPlus"
             onClick={onClickAdd ? onClickAdd : () => {}}
             className="w-10 h-10 mt-4 cursor-pointer"
           />
         )}
         {refresh && (
           <ImgButton
-            hoveredImg="purpleRefresh"
-            img="refresh"
+            hoveredImg="blueRefresh"
+            img="darkRefresh"
             onClick={onClickRefresh ? onClickRefresh : () => {}}
             className="w-8 h-8 mt-4 cursor-pointer"
           />
@@ -66,7 +67,7 @@ const Header: React.FC<HeaderProps> = ({
         {info && <img src="/svgs/info.svg" className="w-8 h-8 mt-4" />}
         {search && (
           <div className="flex">
-            <img src="/svgs/search.svg" />{" "}
+            <img src="/svgs/darkSearch.svg" />{" "}
             <TextBox type="text" label="Search by item description" />
           </div>
         )}

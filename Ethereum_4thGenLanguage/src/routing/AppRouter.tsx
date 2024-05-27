@@ -18,6 +18,10 @@ import BuyerItems from "../pages/Buyer/Items";
 import BuyerContracts from "../pages/Buyer/Contracts";
 import ItemDetailsSeller from "../pages/Seller/ItemDetails";
 import ItemDetailsBuyer from "../pages/Buyer/ItemDetails";
+import ItemDetailsOracle from "../pages/Oracle/ItemDetails";
+import IDInfo from "../pages/Oracle/IDInfo";
+import Contracts from "../pages/Oracle/Contracts";
+import Complains from "../pages/Oracle/Complains";
 
 const isAuthenticated = () => {
   const token = localStorage.getItem("token");
@@ -34,10 +38,18 @@ const AppRouter: React.FC = () => {
 
         <Route path="/main/oracle" element={<OracleLayout />}>
           <Route path="" element={<ItemVerification />} />
+          <Route path="complaints" element={<Complains />} />
+
           <Route path="items" element={<ItemVerification />} />
+          <Route path="items/:itemID" element={<ItemDetailsOracle />} />
+
           <Route path="ids" element={<IDVerification />} />
-          <Route path="events" element={<EventsVerification />} />
-          <Route path="steps" element={<StepsVerification />} />
+          <Route path="ids/:username" element={<IDInfo />} />
+          <Route path="steps" element={<Contracts />} />
+          <Route path="steps/:sellerID" element={<StepsVerification />} />
+
+          <Route path="events" element={<Contracts />} />
+          <Route path="events/:contractID" element={<EventsVerification />} />
         </Route>
 
         <Route path="/main/seller" element={<SellerLayout />}>
@@ -51,7 +63,7 @@ const AppRouter: React.FC = () => {
           <Route path="" element={<BuyerItems />} />
           <Route path=":itemID" element={<ItemDetailsBuyer />} />
 
-          <Route path="contracts" element={<BuyerContracts />} />
+          <Route path="contracts" element={<SellerContracts />} />
           <Route path="contracts/:contractID" element={<CurrentContract />} />
         </Route>
       </Routes>

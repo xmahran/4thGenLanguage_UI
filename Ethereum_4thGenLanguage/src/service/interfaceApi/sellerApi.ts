@@ -51,6 +51,7 @@ export const loginSeller = async (
 export const getSellerItems = async (sellerID: any): Promise<Item[]> => {
   const response = await authApi.get(`/item/selleritems/${sellerID}`);
   let items: Item[] = [];
+  console.log(response);
   for (const record of response.currSellerItems) {
     let itemID = record.id;
     let itemContent = record.content[0];
@@ -59,6 +60,7 @@ export const getSellerItems = async (sellerID: any): Promise<Item[]> => {
       sellerID: itemContent.sellerID,
       itemLocation: itemContent.itemLocation,
       itemName: itemContent.itemName,
+      hasContract: itemContent.hasContract,
       itemDescription: itemContent.itemDescription,
       itemPrice: itemContent.itemPrice,
       itemImgHash: itemContent.itemImgHash,
@@ -93,6 +95,5 @@ export const getIdentities = async () => {
       username: identity.metadata.name.split("identity")[0],
     });
   }
-  console.log(identities);
   return identities;
 };

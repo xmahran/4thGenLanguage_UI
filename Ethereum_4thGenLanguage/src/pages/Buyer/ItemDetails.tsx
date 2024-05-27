@@ -5,23 +5,28 @@ import { useAppSelector } from "../../store/store";
 import Header from "../../components/shared/Header";
 import Loader from "../../components/shared/Loader";
 import ErrorState from "../../components/shared/ErrorState";
-import { ethRegExp, pinataURL } from "../../helpers/Constants";
+import { ethRegExp, pinataURL, systemAddress } from "../../helpers/Constants";
 import { Image } from "antd";
 import { Rating } from "@mui/material";
 import Button from "../../components/shared/Button";
 import { validate } from "../../helpers/Validator";
 import { valuesValidator } from "../../helpers/methods";
 import { toast } from "react-toastify";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ContractInput } from "../../interfaces/contractDataTypes";
 import { getSellerByID } from "../../service/interfaceApi/sellerApi";
 import BuyContractDialog from "./BuyContractDialog";
-import { addBuyer, loadContract } from "../../service/eth/contractApi";
+import {
+  addBuyer,
+  getEthAddress,
+  loadContract,
+} from "../../service/eth/contractApi";
 import { checkMetamask, sendTransaction } from "../../service/eth/ethApi";
 import {
   AddBuyerInput,
   TransactionInput,
 } from "../../service/interfaceApi/types";
+import { getOracleByEthAddress } from "../../service/eth/oracleApi";
 
 interface ItemDetailsProps {}
 const ItemDetails: React.FC<ItemDetailsProps> = ({}) => {
@@ -54,10 +59,28 @@ const ItemDetails: React.FC<ItemDetailsProps> = ({}) => {
     queryFn: () => getSellerByID(currItem?.sellerID),
     enabled: currItem ? true : false,
   });
+
   const { data: currContract, error: errorLoadContract } = useQuery({
     queryKey: ["loadContract"],
     queryFn: () => loadContract(currSeller?.id),
     enabled: currSeller ? true : false,
+  });
+  const { data: ethAddresses, error: errorEthAddress } = useQuery({
+    queryKey: ["getEthAddress"],
+    queryFn: () => getEthAddress(currContract?.id),
+    enabled: currContract ? true : false,
+  });
+
+  const { data: currOracleItem, isError: errorOracleItem } = useQuery({
+    queryKey: ["getOracleByEth"],
+    queryFn: () => getOracleByEthAddress(ethAddresses?.item.oracleAddress),
+    enabled: ethAddresses ? true : false,
+  });
+
+  const { data: currOracleID, isError: errorOracleID } = useQuery({
+    queryKey: ["getOracleByEth"],
+    queryFn: () => getOracleByEthAddress(ethAddresses?.seller.oracleAddress),
+    enabled: ethAddresses ? true : false,
   });
 
   const [values, setValues] = useState<ContractInput>({
@@ -106,6 +129,7 @@ const ItemDetails: React.FC<ItemDetailsProps> = ({}) => {
     },
     onSuccess: () => {
       setIsOpenContract(false);
+      nav("/main/buyer");
     },
   });
 
@@ -140,6 +164,7 @@ const ItemDetails: React.FC<ItemDetailsProps> = ({}) => {
           from: balanceResponse.account,
           price: balanceResponse.price,
           web3: balanceResponse.web3,
+          to: systemAddress,
         });
         buy(data);
       }
@@ -184,32 +209,32 @@ const ItemDetails: React.FC<ItemDetailsProps> = ({}) => {
           <div>
             <div className="flex flex-col justify-center items-start  text-start space-y-4 py-4 ml-4">
               <label className="text-md font-bold">
-                <span className="text-gray-300 font-normal">Name: </span>{" "}
+                <span className="text-[#333333] font-normal">Name: </span>{" "}
                 {currItem?.itemName}
               </label>
               <label className="text-md font-bold">
-                <span className="text-gray-300 font-normal">Price: </span>{" "}
+                <span className="text-[#333333] font-normal">Price: </span>{" "}
                 {currItem?.itemPrice}ETH
               </label>
               <label className="text-md font-bold">
-                <span className="text-gray-300 font-normal">
+                <span className="text-[#333333] font-normal">
                   Item Description:{" "}
                 </span>{" "}
                 {currItem?.itemDescription}
               </label>
               <label className="text-md font-bold">
-                <span className="text-gray-300 font-normal">
+                <span className="text-[#333333] font-normal">
                   Item Location:{" "}
                 </span>{" "}
                 {currItem?.itemLocation}
               </label>
             </div>
             <label className="text-md font-bold text-start">
-              <span className="text-gray-300 font-normal flex gap-x-2 ml-4">
+              <span className="text-[#333333] font-normal flex gap-x-2 ml-4">
                 Image Hash:{" "}
                 <div>
                   {currItem?.itemImgHash.map((hash, index) => (
-                    <span key={index} className="text-white font-bold">
+                    <span key={index} className="font-bold">
                       {hash},
                       <br />
                     </span>
@@ -235,70 +260,103 @@ const ItemDetails: React.FC<ItemDetailsProps> = ({}) => {
           <Header title="Seller Details" info />
           <div className="flex flex-col justify-center items-start space-y-4 py-4 ml-4">
             <label className="text-md font-bold">
-              <span className="text-gray-300 font-normal">
+              <span className="text-[#333333] font-normal">
                 Full Legal Name:{" "}
               </span>{" "}
               {currSeller?.fullName}
             </label>
             <label className="text-md font-bold">
-              <span className="text-gray-300 font-normal">Username: </span>{" "}
+              <span className="text-[#333333] font-normal">Username: </span>{" "}
               {currSeller?.username}
             </label>
 
             <label className="text-md font-bold">
-              <span className="text-gray-300 font-normal">Email: </span>{" "}
+              <span className="text-[#333333] font-normal">Email: </span>{" "}
               {currSeller?.email}
             </label>
             <label className="text-md font-bold">
-              <span className="text-gray-300 font-normal">Status: </span>{" "}
-              <span className="text-green-500 font-bold">VERIFIED</span>
+              <span className="text-[#333333] font-normal">Status: </span>{" "}
+              <span className="text-[#4CAF50] font-bold">VERIFIED</span>
             </label>
             <label className="text-md font-bold">
-              <span className="text-gray-300 font-normal">ETH Address: </span>{" "}
+              <span className="text-[#333333] font-normal">ETH Address: </span>{" "}
               {currSeller?.ethAddress}
             </label>
             <label className="text-md font-bold">
-              <span className="text-gray-300 font-normal">Stake: </span>{" "}
+              <span className="text-[#333333] font-normal">Stake: </span>{" "}
               {currSeller?.stake}ETH
             </label>
             <label className="text-md font-bold">
-              <span className="text-gray-300 font-normal flex gap-x-2">
-                Rating: <Rating value={4} />
+              <span className="text-[#333333] font-normal flex gap-x-2">
+                Rating: <Rating value={5} />
               </span>{" "}
             </label>
           </div>
-          <Header title="Oracle Details" info />
+          <Header title="Oracle For Item Verification" info />
           <div className="flex flex-col justify-center items-start space-y-4 py-4 ml-4">
             <label className="text-md font-bold">
-              <span className="text-gray-300 font-normal"> Name: </span>{" "}
-              {user?.username}
+              <span className="text-[#333333] font-normal"> Name: </span>
+              {currOracleItem?.fullName}
             </label>
 
             <label className="text-md font-bold">
-              <span className="text-gray-300 font-normal">ETH Address: </span>{" "}
-              {user?.email}
+              <span className="text-[#333333] font-normal">ETH Address: </span>{" "}
+              {currOracleItem?.ethAddress}
             </label>
             <label className="text-md font-bold">
-              <span className="text-gray-300 font-normal flex gap-x-2">
+              <span className="text-[#333333] font-normal">Stake: </span>{" "}
+              {currOracleItem?.stake}
+            </label>
+            <label className="text-md font-bold">
+              <span className="text-[#333333] font-normal flex gap-x-2">
                 {" "}
                 Rating: <Rating value={4} />
               </span>{" "}
             </label>
           </div>
-          <div className="flex gap-x-4 justify-end mt-4">
-            <Button dark loading={false} onClick={() => nav("/main/buyer")}>
-              Back
-            </Button>
-            <Button
-              light
-              loading={false}
-              onClick={() => {
-                setIsOpenContract(true);
-              }}
-            >
-              Commit to Buy
-            </Button>
+
+          <Header title="Oracle For Seller Identity Verification" info />
+          <div className="flex flex-col justify-center items-start space-y-4 py-4 ml-4">
+            <label className="text-md font-bold">
+              <span className="text-[#333333] font-normal"> Name: </span>
+              {currOracleID?.fullName}
+            </label>
+
+            <label className="text-md font-bold">
+              <span className="text-[#333333] font-normal">ETH Address: </span>{" "}
+              {currOracleID?.ethAddress}
+            </label>
+            <label className="text-md font-bold">
+              <span className="text-[#333333] font-normal">Stake: </span>{" "}
+              {currOracleID?.stake}
+            </label>
+            <label className="text-md font-bold">
+              <span className="text-[#333333] font-normal flex gap-x-2">
+                {" "}
+                Rating: <Rating value={4} />
+              </span>{" "}
+            </label>
           </div>
+          {!currItem?.hasBuyer ? (
+            <div className="flex gap-x-4 justify-end mt-4 mr-4">
+              <Button dark loading={false} onClick={() => nav("/main/buyer")}>
+                Back
+              </Button>
+              <Button
+                light
+                loading={false}
+                onClick={() => {
+                  setIsOpenContract(true);
+                }}
+              >
+                Commit to Buy
+              </Button>
+            </div>
+          ) : (
+            <div className="flex justify-center text-red-500 font-extrabold">
+              Already bought this item
+            </div>
+          )}
         </div>
       )}
     </div>

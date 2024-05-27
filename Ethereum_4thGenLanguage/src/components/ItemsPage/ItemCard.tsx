@@ -23,7 +23,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, onClick, oracle }) => {
             <div className="flex flex-col space-y-1 ml-2 items-start">
               <label className="text-lg font-bold">
                 {item.itemName}
-                <span className="italic text-green-500 text-md ml-4">
+                <span className="italic text-[#4CAF50] text-md ml-4">
                   {item.itemPrice}ETH
                 </span>
               </label>
@@ -38,8 +38,8 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, onClick, oracle }) => {
               />
             ) : (
               <ImgButton
-                hoveredImg="purpleRight"
-                img="whiteRight"
+                hoveredImg="blueRight"
+                img="darkRight"
                 onClick={onClick}
                 className="cursor-pointer"
               />

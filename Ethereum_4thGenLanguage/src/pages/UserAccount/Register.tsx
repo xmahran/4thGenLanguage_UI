@@ -10,6 +10,7 @@ import {
   emailRegExp,
   ethRegExp,
   passwordRegExp,
+  systemAddress,
 } from "../../helpers/Constants";
 import {
   registerSeller,
@@ -24,11 +25,16 @@ import {
 } from "@mui/material";
 import { registerBuyer } from "../../service/interfaceApi/buyerApi";
 import { registerOracle } from "../../service/eth/oracleApi";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { checkMetamask, sendTransaction } from "../../service/eth/ethApi";
+import { toast } from "react-toastify";
+import { TransactionInput } from "../../service/interfaceApi/types";
 
 interface RegisterProps {}
 const Register: React.FC<RegisterProps> = ({}) => {
   const nav = useNavigate();
   const [loading, setLoading] = useState<boolean>(false);
+  const [enable, setEnabled] = useState<boolean>(false);
   const CreateAccount = () => {
     const [username, setUsername] = useState<string>("");
     const [fullname, setFullname] = useState<string>("");
@@ -78,16 +84,31 @@ const Register: React.FC<RegisterProps> = ({}) => {
     };
 
     const toggleStyle = {
-      "&.MuiToggleButton-primary	": {
-        color: "white",
-        border: "none",
+      "&.MuiToggleButton-primary": {
+        color: "#333333",
+        borderColor: "#DDDDDD",
         borderRadius: "1.5rem",
         width: "200px",
-        font: "bold",
         fontFamily: "Raleway, sans-serif",
+        "&:hover": {
+          backgroundColor: "#2196F3",
+          color: "white",
+        },
       },
-      "&.Mui-selected	": {
-        backgroundImage: "linear-gradient(90deg, #303F9F, #7B1FA2)",
+      "&.Mui-selected": {
+        backgroundColor: "#2196F3",
+        color: "white",
+        "&:hover": {
+          backgroundColor: "#1E88E5", // Change this to your desired hover color for selected state
+        },
+      },
+    };
+    const radioboxStyle = {
+      "&.MuiRadio-root": {
+        color: "#DDDDDD",
+      },
+      "&.Mui-checked	": {
+        color: "#2196F3",
       },
     };
 
@@ -150,6 +171,7 @@ const Register: React.FC<RegisterProps> = ({}) => {
               color="primary"
               exclusive
               value={role}
+              className="gap-x-4"
               onChange={handleChangeRole}
             >
               <ToggleButton sx={toggleStyle} value="seller">
@@ -174,35 +196,17 @@ const Register: React.FC<RegisterProps> = ({}) => {
                 >
                   <FormControlLabel
                     value="ids"
-                    control={
-                      <Radio
-                        sx={{
-                          "&.MuiRadio-root": { color: "white" },
-                        }}
-                      />
-                    }
+                    control={<Radio sx={radioboxStyle} />}
                     label="User Official IDs"
                   />
                   <FormControlLabel
                     value="item"
-                    control={
-                      <Radio
-                        sx={{
-                          "&.MuiRadio-root": { color: "white" },
-                        }}
-                      />
-                    }
+                    control={<Radio sx={radioboxStyle} />}
                     label="Item Authenticity"
                   />
                   <FormControlLabel
                     value="steps"
-                    control={
-                      <Radio
-                        sx={{
-                          "&.MuiRadio-root": { color: "white" },
-                        }}
-                      />
-                    }
+                    control={<Radio sx={radioboxStyle} />}
                     label="Contract Steps & Escrow"
                   />
                 </RadioGroup>
@@ -322,8 +326,7 @@ const Register: React.FC<RegisterProps> = ({}) => {
         <div className="space-y-4">
           <div className="flex justify-center">
             <LargeButton
-              icon="whiteUpload"
-              hoverIcon="whiteUpload"
+              icon="darkUpload"
               onClick={() => onClickUpload()}
               width={900}
               subTitle="It must be of type government social card or passport - It still needs to be verified"
@@ -340,7 +343,7 @@ const Register: React.FC<RegisterProps> = ({}) => {
           </div>
           <div className="flex justify-center space-x-2">
             <label className="italic text-md font-extralight">
-              <span className="text-green-500">
+              <span className="text-[#4CAF50] font-bold">
                 {selectedFiles.map((file, index) =>
                   index !== selectedFiles.length - 1
                     ? file.name + " - "
@@ -351,7 +354,7 @@ const Register: React.FC<RegisterProps> = ({}) => {
             {selectedFiles.length !== 0 && (
               <div className="flex space-x-2">
                 <img
-                  src={`/svgs/${isHoveredX ? "whiteX" : "x"}.svg`}
+                  src={`/svgs/${isHoveredX ? "blueX" : "darkX"}.svg`}
                   onMouseEnter={() => setIsHoveredX(true)}
                   onMouseLeave={() => setIsHoveredX(false)}
                   onClick={() => setSelectedFiles([])}
@@ -371,12 +374,14 @@ const Register: React.FC<RegisterProps> = ({}) => {
 
   const uploadPhotos = async () => {
     const { selectedFiles } = uploadIdentityResult.data;
-    const { username } = createAccResult.data;
+    const { username, role } = createAccResult.data;
     let updatedHashes: string[] = [];
     for (const file of selectedFiles) {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("username", username);
+      formData.append("type", role === "oracle" ? "oracle" : "user");
+
       try {
         const data = await uploadIdentityPhotos(formData);
         updatedHashes.push(data.ipfsHash);
@@ -386,78 +391,139 @@ const Register: React.FC<RegisterProps> = ({}) => {
     }
     return updatedHashes;
   };
+  const { selectedFiles } = uploadIdentityResult.data;
+  const { data: balanceResponse } = useQuery({
+    queryKey: ["getAccData"],
+    queryFn: () =>
+      checkMetamask(
+        setupEthDataResult.data.stake ? setupEthDataResult.data.stake : 0
+      ),
+    enabled: selectedFiles.length > 0 ? true : false,
+  });
+
+  const {
+    mutate: transact,
+    isPending: loadingTransaction,
+    data: transaction,
+  } = useMutation({
+    mutationFn: (data: TransactionInput) => {
+      return sendTransaction(data);
+    },
+    onSuccess: () => {
+      toast.success("Transferred", {
+        position: "top-center",
+        className: "toast-message",
+      });
+    },
+  });
 
   const register = async () => {
-    setLoading(true);
-    const { username, email, password, role, scope, fullname } =
-      createAccResult.data;
-    const { ethAddress, stake } = setupEthDataResult.data;
-    const getHashes = await uploadPhotos();
-    let sellerUser: User;
-    let sellerContent;
-    if (role === "seller") {
-      sellerUser = {
-        username: username,
-        stake: stake,
-        fullName: fullname,
-        email: email,
-        password: password,
-        ethAddress: ethAddress,
-        role: role,
-        identityPhotosHash: getHashes,
-      };
-      sellerContent = [sellerUser];
-    }
-
-    let buyerUser: User;
-    let buyerContent;
-    if (role === "buyer") {
-      buyerUser = {
-        username: username,
-        fullName: fullname,
-        email: email,
-        password: password,
-        ethAddress: ethAddress,
-        role: role,
-        identityPhotosHash: getHashes,
-      };
-      buyerContent = [buyerUser];
-    }
-    let oracleUser: User;
-    let contentOracle;
-    if (role === "oracle") {
-      oracleUser = {
-        username: username,
-        fullName: fullname,
-        email: email,
-        password: password,
-        ethAddress: ethAddress,
-        role: role,
-        identityPhotosHash: getHashes,
-        stake: stake,
-        scope: scope,
-      };
-      contentOracle = [oracleUser];
-    }
-
-    try {
-      let registered;
+    const { role } = createAccResult.data;
+    if (transaction || role === "buyer") {
+      setLoading(true);
+      const { username, email, password, role, scope, fullname } =
+        createAccResult.data;
+      const { ethAddress, stake } = setupEthDataResult.data;
+      const getHashes = await uploadPhotos();
+      let sellerUser: User;
+      let sellerContent;
       if (role === "seller") {
-        registered = await registerSeller(sellerContent ? sellerContent : []);
-      } else if (role === "buyer") {
-        registered = await registerBuyer(buyerContent ? buyerContent : []);
-      } else {
-        registered = await registerOracle(contentOracle ? contentOracle : []);
+        sellerUser = {
+          username: username,
+          stake: stake,
+          fullName: fullname,
+          email: email,
+          password: password,
+          ethAddress: ethAddress,
+          role: role,
+          identityPhotosHash: getHashes,
+        };
+        sellerContent = [sellerUser];
       }
-      nav("/");
-    } catch (error) {
-      console.log(error);
-      setLoading(false);
-    } finally {
-      setLoading(false);
+
+      let buyerUser: User;
+      let buyerContent;
+      if (role === "buyer") {
+        buyerUser = {
+          username: username,
+          fullName: fullname,
+          email: email,
+          password: password,
+          ethAddress: ethAddress,
+          role: role,
+          identityPhotosHash: getHashes,
+        };
+        buyerContent = [buyerUser];
+      }
+      let oracleUser: User;
+      let contentOracle;
+      if (role === "oracle") {
+        oracleUser = {
+          username: username,
+          fullName: fullname,
+          email: email,
+          password: password,
+          ethAddress: ethAddress,
+          role: role,
+          identityPhotosHash: getHashes,
+          stake: stake,
+          scope: scope,
+        };
+        contentOracle = [oracleUser];
+      }
+
+      try {
+        let registered;
+
+        if (role === "seller") {
+          registered = await registerSeller(sellerContent ? sellerContent : []);
+        } else if (role === "buyer") {
+          registered = await registerBuyer(buyerContent ? buyerContent : []);
+        } else {
+          registered = await registerOracle(contentOracle ? contentOracle : []);
+        }
+
+        nav("/");
+      } catch (error) {
+        console.log(error);
+        setLoading(false);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      toast.info("Put stake first", {
+        position: "top-center",
+        className: "toast-message",
+      });
     }
   };
+  const putStake = () => {
+    const { ethAddress, stake } = setupEthDataResult.data;
 
+    if (balanceResponse?.status === "lte") {
+      toast.error("Insufficent funds", {
+        position: "top-center",
+        className: "toast-message",
+      });
+    } else if (balanceResponse?.status === "no_metamask") {
+      toast.info("Please install metamask", {
+        position: "top-center",
+        className: "toast-message",
+      });
+    } else if (balanceResponse?.status === "denied") {
+      toast.info("You declined the process, try agin", {
+        position: "top-center",
+        className: "toast-message",
+      });
+    } else if (balanceResponse?.status === "success") {
+      transact({
+        from: ethAddress,
+        price: stake,
+        to: systemAddress,
+        web3: balanceResponse.web3,
+      });
+    }
+  };
   return (
     <div className="flex flex-col w-screen items-center">
       <h1>Welcome</h1>
@@ -485,9 +551,10 @@ const Register: React.FC<RegisterProps> = ({}) => {
       </div>
 
       <div className="flex justify-center space-x-4 mt-10">
-        <label className="mt-4 italic text-xs font-extralight">
+        <label className="mt-4 italic text-xs text-[#808080]">
           Already registered?{" "}
         </label>
+
         <Button
           light={true}
           loading={false}
@@ -496,6 +563,16 @@ const Register: React.FC<RegisterProps> = ({}) => {
         >
           Login
         </Button>
+        {createAccResult.data.role != "buyer" && (
+          <Button
+            dark={true}
+            loading={false}
+            disabled={loadingTransaction}
+            onClick={() => putStake()}
+          >
+            Put stake
+          </Button>
+        )}
       </div>
     </div>
   );

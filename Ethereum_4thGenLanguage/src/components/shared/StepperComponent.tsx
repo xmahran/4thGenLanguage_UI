@@ -19,14 +19,12 @@ const ColorlibConnector = styled(StepConnector)(({ theme }) => ({
   },
   [`&.${stepConnectorClasses.active}`]: {
     [`& .${stepConnectorClasses.line}`]: {
-      backgroundImage:
-        "linear-gradient( 136deg, rgb(48, 63, 159) 0%, rgb(112,12,179) 100%)",
+      backgroundColor: "#FF7324",
     },
   },
   [`&.${stepConnectorClasses.completed}`]: {
     [`& .${stepConnectorClasses.line}`]: {
-      backgroundImage:
-        "linear-gradient( 136deg, rgb(48, 63, 159) 0%, rgb(112,12,179) 100%)",
+      backgroundColor: "#FF7324",
     },
   },
   [`& .${stepConnectorClasses.line}`]: {
@@ -52,20 +50,18 @@ const ColorlibStepIconRoot = styled("div")<{
   justifyContent: "center",
   alignItems: "center",
   ...(ownerState.active && {
-    backgroundImage:
-      "linear-gradient( 136deg, rgb(48, 63, 159) 0%, rgb(112,12,179) 100%)",
+    backgroundColor: "#2196F3",
     boxShadow: "0 4px 10px 0 rgba(0,0,0,.25)",
   }),
   ...(ownerState.completed && {
-    backgroundImage:
-      "linear-gradient( 136deg, rgb(48, 63, 159) 0%, rgb(112,12,179) 100%)",
+    backgroundColor: "#2196F3",
   }),
 }));
 
 const labelStyle = {
   "&.MuiStepLabel-root": {
     "& .MuiStepLabel-label": {
-      color: "white",
+      color: "#333333",
       fontFamily: "Raleway, sans-serif",
       fontSize: "0.875rem",
     },
@@ -147,8 +143,6 @@ const StepperComponent: React.FC<StepperComponentProps> = ({
             arrowDirection="LEFT"
             loading={false}
             disabled={loadingLastBtn}
-            icon="whiteLeft"
-            hoverIcon="purpleLeft"
             visible={activeStep != 0 ? true : false}
           >
             Previous
@@ -157,8 +151,6 @@ const StepperComponent: React.FC<StepperComponentProps> = ({
             onClick={() => nextTab()}
             arrowDirection="RIGHT"
             loading={false}
-            icon="whiteRight"
-            hoverIcon="purpleRight"
             visible={activeStep != steps.length - 1 ? true : false}
           >
             Next

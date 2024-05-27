@@ -17,7 +17,18 @@ export interface Item {
   itemDescription: string;
   itemLocation: string;
   itemPrice: number;
+  hasContract?: boolean;
+  hasBuyer?: boolean;
   itemImgHash: string[];
+  contractID?: any;
+}
+export interface Complain {
+  buyerID: any;
+  sellerID: any;
+  contractID: any;
+  id?: any;
+  complainTitle: string;
+  description: string;
 }
 
 export interface UserIdentity {

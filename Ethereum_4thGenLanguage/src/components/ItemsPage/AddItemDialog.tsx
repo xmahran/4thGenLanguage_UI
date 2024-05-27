@@ -42,9 +42,9 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({
 }) => {
   const dialogStyle = {
     "&.MuiDialog-paper": {
-      background: "linear-gradient(180deg, #1c1c1c, #44055f, #000000)",
+      background: "#F7F7F7",
       borderRadius: "1.5rem",
-      color: "white",
+      color: "#333333",
       width: "1000px",
       height: "500px",
     },
@@ -57,7 +57,7 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({
       }}
     >
       <div className="flex justify-center gap-x-2 mt-4">
-        <img src="/svgs/plus.svg" className="mb-1" />
+        <img src="/svgs/darkPlus.svg" className="mb-1" />
         <label className="text-xl"> Add items</label>
       </div>
       <DialogContent>
@@ -107,7 +107,6 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({
             subTitle="Add an item image to be displayed to the buyer later"
             icon="upload"
             onClick={onClickUpload}
-            hoverIcon="purpleUpload"
             width={550}
           />
           <div className="flex justify-center items-center mt-10 gap-x-4">

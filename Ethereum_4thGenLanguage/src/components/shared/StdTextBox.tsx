@@ -24,10 +24,9 @@ const StdTextBox: React.FC<StdTextBoxProps> = ({
       value={value}
       onChange={onChange}
       sx={{
-        color: "white",
+        color: "#333333",
         width: `${width}px`,
       }}
-      color="secondary"
       className={className}
     />
   );

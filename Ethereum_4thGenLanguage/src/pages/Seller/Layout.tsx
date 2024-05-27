@@ -8,6 +8,8 @@ import { getSellerByID } from "../../service/interfaceApi/sellerApi";
 import Loader from "../../components/shared/Loader";
 import { useEffect } from "react";
 import ErrorState from "../../components/shared/ErrorState";
+import Accordion from "../../components/shared/Accordion";
+import { Rating } from "@mui/material";
 
 interface MainProps {}
 
@@ -49,26 +51,23 @@ const Layout: React.FC<MainProps> = ({}) => {
 
   return (
     <div className="flex w-screen gap-x-10 ">
-      <div className="w-1/5 bg-[#1c1c1c] h-[800px] rounded-3xl shadow-3xl mt-5 sticky top-5">
+      <div className="w-[30%] bg-[#FFFFFF] h-[800px] rounded-3xl shadow-3xl mt-5 sticky top-5 border border-[#EAEAEA]">
         <div className="flex flex-col items-center p-4 gap-y-4">
           <img src="/logo.png" className="w-20 h-20" />
           <label className="text-xl font-bold">Profile</label>
-          {/* <div className="text-start flex flex-col gap-y-4">
-            <label className="text-md bg-gradient-to-r from-indigo-700 to-purple-700 inline-block text-transparent bg-clip-text">
-              <span className="text-white font-bold">Username: </span>{" "}
-              {user.username}
-            </label>
-            <label className="text-md bg-gradient-to-r from-indigo-700 to-purple-700 inline-block text-transparent bg-clip-text">
-              <span className="text-white font-bold">Email: </span> {user.email}
-            </label>{" "}
-            <label className="text-md bg-gradient-to-r from-indigo-700 to-purple-700 inline-block text-transparent bg-clip-text">
-              <span className="text-white font-bold">Ethereum Address: </span>{" "}
-              {user.email}
-            </label>{" "}
-          </div> */}
+          <Accordion title={"Full Legal Name"}>{user.fullName}</Accordion>
+          <Accordion title={"Email"}>{user.email}</Accordion>
+          <Accordion title={"Username"}>{user.username}</Accordion>
+          <Accordion title={"Ethereum Address"}>{user.ethAddress}</Accordion>
+          <Accordion title={"Stake"}>{user.stake}ETH</Accordion>
+
+          <div className="flex gap-x-4 font-bold text-[#4CAF50]">
+            <label>VERIFIED</label>
+            <Rating name="read-only" value={4} size="medium" readOnly />
+          </div>
         </div>
       </div>
-      <div className="flex flex-col w-[65%]">
+      <div className="flex flex-col w-full">
         <div className="h-full">
           <HomeBar
             items={[

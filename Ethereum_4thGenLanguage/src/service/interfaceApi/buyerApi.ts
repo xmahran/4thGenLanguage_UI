@@ -1,10 +1,14 @@
 import { jwtDecode } from "jwt-decode";
 import { authApi } from "./authApi";
 import { DecodedResponse, HashResponse, LoginResponse } from "./types";
-import { User } from "../../interfaces/dataTypes";
+import { Complain, User } from "../../interfaces/dataTypes";
 
 export const registerBuyer = async (content: any[]): Promise<HashResponse> => {
   const response = await authApi.post("/buyer/register", content, "json");
+  return response;
+};
+export const addComplain = async (content: any[]): Promise<HashResponse> => {
+  const response = await authApi.post("/buyer/addcomplain", content, "json");
   return response;
 };
 export const getBuyerByID = async () => {
@@ -17,6 +21,17 @@ export const getBuyerByID = async () => {
     `/buyer/getbuyer/${decodedResponse?.userID}`
   );
   return response.currBuyer;
+};
+export const checkValidity = async () => {
+  let token = localStorage.getItem("token");
+  let decodedResponse;
+  if (token) {
+    decodedResponse = jwtDecode(token) as DecodedResponse;
+  }
+  const response = await authApi.get(
+    `/buyer/checkvalidity/${decodedResponse?.userID}`
+  );
+  return response.verified;
 };
 export const loginBuyer = async (
   loginData: LoginResponse
@@ -43,4 +58,20 @@ export const loginBuyer = async (
     token: response.token,
   };
   return modifiedResponse;
+};
+
+export const getAllComplaints = async () => {
+  const response = await authApi.get("/buyer/getcomplaints");
+  let complains: Complain[] = [];
+  for (const complain of response.complains) {
+    complains.push({
+      id: complain.id,
+      buyerID: complain.content[0].buyerID,
+      sellerID: complain.content[0].sellerID,
+      contractID: complain.content[0].contractID,
+      complainTitle: complain.content[0].complainTitle,
+      description: complain.content[0].description,
+    });
+  }
+  return complains;
 };

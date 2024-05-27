@@ -4,54 +4,54 @@ import ListComponent from "../../components/shared/ListComponent";
 import Loader from "../../components/shared/Loader";
 import ErrorState from "../../components/shared/ErrorState";
 import EmptyState from "../../components/shared/EmptyState";
-import { listenToEvents } from "../../service/eth/oracleApi";
-import { useParams } from "react-router-dom";
+import { getAllComplaints } from "../../service/interfaceApi/buyerApi";
 
-interface EventsVerificationProps {}
-const EventsVerification: React.FC<EventsVerificationProps> = () => {
-  const { contractID } = useParams();
+interface ComplainsProps {}
+const Complains: React.FC<ComplainsProps> = () => {
   const {
-    data: events,
-    refetch: refetchEvents,
-    isLoading: isLoadingEvents,
-    isError: isErrorEvents,
+    data: complaints,
+    refetch: refetchComplaints,
+    isLoading: isLoadingComp,
+    isError: isErrorComp,
   } = useQuery({
-    queryKey: ["listenToEvents"],
-    queryFn: () => listenToEvents(contractID),
+    queryKey: ["getComp"],
+    queryFn: () => getAllComplaints(),
   });
   return (
     <div>
-      <Header title="Events" refresh onClickRefresh={() => refetchEvents()} />
+      <Header
+        title="Buyer Complaints"
+        refresh
+        onClickRefresh={() => refetchComplaints()}
+      />
       <div className="py-10 w-[90%]">
-        {isLoadingEvents ? (
+        {isLoadingComp ? (
           <div className="mt-[10%]">
             <Loader size={60} />
           </div>
-        ) : isErrorEvents ? (
+        ) : isErrorComp ? (
           <ErrorState
             title="An unknown error has occurred"
             subTitle="Retry the process"
             loading={false}
-            onClick={() => refetchEvents()}
+            onClick={() => refetchComplaints()}
           />
-        ) : events?.length === 0 ? (
+        ) : complaints?.length === 0 ? (
           <EmptyState
-            title="No events available"
-            subTitle="No events were committed"
+            title="No complains available"
+            subTitle="No complains were added"
             buttonTitle="OK"
             loading={false}
             onClick={() => {}}
           />
         ) : (
-          events?.map((event, index) => (
+          complaints?.map((complain, index) => (
             <div key={index}>
               <ListComponent
                 oracle
-                title={event.eventName}
+                title={complain.complainTitle}
                 img="darkEvents"
-                subTitle={event.argsNames
-                  .map((name, index) => `${name}: ${event.argsValues[index]}`)
-                  .join(", ")}
+                subTitle={complain.description}
               />
             </div>
           ))
@@ -61,4 +61,4 @@ const EventsVerification: React.FC<EventsVerificationProps> = () => {
   );
 };
 
-export default EventsVerification;
+export default Complains;

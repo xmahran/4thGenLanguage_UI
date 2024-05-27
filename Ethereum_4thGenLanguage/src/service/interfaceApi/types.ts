@@ -24,13 +24,18 @@ export interface DecodedResponse {
 }
 
 export interface VerificationInput {
-  hash: string;
+  hash?: string;
+  type: any;
+  id?: any;
   updatedMetadata: { status: "VERIFIED" };
 }
 export interface VerifyHashInput {
   oracleAddress: string;
   oracleVerificationHash: string;
-  type: string;
+  type: any;
+  itemID?: any;
+  stake: any;
+  sellerID?: any;
 }
 export interface AddStepInput {
   stepProcess: string;
@@ -41,6 +46,7 @@ export interface AddStepInput {
 export interface CreateContractInput {
   sellerID?: number;
   steps: Step[];
+  itemID: any;
   values: ContractInput;
   username: string;
 }
@@ -55,4 +61,35 @@ export interface TransactionInput {
   web3: any;
   price: any;
   from: any;
+  to: any;
+}
+export interface ContractOutput {
+  id: number;
+  abi: any;
+  itemID: any;
+  bytecode: any;
+  sellerID: number;
+  name: string;
+  contractAddress: any;
+}
+
+export interface StepCompletionInput {
+  stepsNo: number[];
+  contractID: any;
+}
+
+export interface VerifyStepsInput {
+  contractID: any;
+  stepsNo: number[];
+  oracleAddress: any;
+  stake: any;
+}
+
+export interface EthAddressOutput {
+  item: {
+    oracleAddress: any;
+  };
+  seller: {
+    oracleAddress: any;
+  };
 }

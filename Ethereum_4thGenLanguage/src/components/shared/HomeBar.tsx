@@ -1,4 +1,3 @@
-// HomeBar.tsx
 import React, { useState } from "react";
 
 interface HomeBarItem {
@@ -23,18 +22,16 @@ const HomeBar: React.FC<HomeBarProps> = ({ items, onItemClick }) => {
 
   return (
     <div>
-      <div className="flex justify-around bg-[#1c1c1c] h-[90px] rounded-2xl items-center">
+      <div className="flex justify-around bg-[#F7F7F7] h-[90px] rounded-2xl items-center">
         {items.map((item, index) => (
           <label
-            className={`text-xl font-bold shadow-sm cursor-pointer transition-all ease-in-out duration-300 ${
-              index === activeTab
-                ? "bg-gradient-to-r from-indigo-700 to-purple-700 inline-block text-transparent bg-clip-text"
-                : "hover:scale-150"
+            className={`text-xl font-bold  cursor-pointer transition-all ease-in-out duration-300 ${
+              index === activeTab ? "text-[#2196F3]" : "hover:scale-150"
             }`}
             key={index}
             onClick={() => {
               setActiveTab(index);
-              onItemClick(item.path); // Call onItemClick with path
+              onItemClick(item.path);
             }}
           >
             {item.title}

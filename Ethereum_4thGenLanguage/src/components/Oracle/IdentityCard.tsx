@@ -19,10 +19,12 @@ const IdentityCard: React.FC<IdentityCardProps> = ({ identity, onClick }) => {
             loading={"lazy"}
           />
           <div className="flex justify-between mt-4">
-            <label className="text-lg font-bold">{identity.username}</label>
+            <label className="text-lg font-bold">
+              {identity.username}'s IDs
+            </label>
             <ImgButton
-              hoveredImg="purpleCheck"
-              img="whiteCheck"
+              hoveredImg="blueRight"
+              img="darkRight"
               onClick={onClick}
               className="cursor-pointer"
             />

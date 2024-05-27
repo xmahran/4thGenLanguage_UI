@@ -60,10 +60,10 @@ const Login: React.FC<LoginProps> = ({}) => {
         });
       } else {
         role === "seller"
-          ? nav("/main/seller")
+          ? nav("/main/seller/items")
           : role === "buyer"
           ? nav("/main/buyer")
-          : nav("/main/oracle");
+          : nav("/main/oracle/items");
         let currUser = response.userNode;
         dispatch(setUser(currUser));
         localStorage.setItem("token", response.token);
@@ -91,6 +91,14 @@ const Login: React.FC<LoginProps> = ({}) => {
     }
   };
 
+  const radioboxStyle = {
+    "&.MuiRadio-root": {
+      color: "#DDDDDD",
+    },
+    "&.Mui-checked	": {
+      color: "#2196F3",
+    },
+  };
   return (
     <div className="flex flex-col items-center">
       <div className="flex flex-col items-center justify-center space-y-5 py-10">
@@ -117,38 +125,17 @@ const Login: React.FC<LoginProps> = ({}) => {
         >
           <FormControlLabel
             value="buyer"
-            control={
-              <Radio
-                size="small"
-                sx={{
-                  "&.MuiRadio-root": { color: "white" },
-                }}
-              />
-            }
+            control={<Radio size="small" sx={radioboxStyle} />}
             label="Buyer"
           />
           <FormControlLabel
             value="seller"
-            control={
-              <Radio
-                size="small"
-                sx={{
-                  "&.MuiRadio-root": { color: "white" },
-                }}
-              />
-            }
+            control={<Radio size="small" sx={radioboxStyle} />}
             label="Seller"
           />
           <FormControlLabel
             value="oracle"
-            control={
-              <Radio
-                size="small"
-                sx={{
-                  "&.MuiRadio-root": { color: "white" },
-                }}
-              />
-            }
+            control={<Radio size="small" sx={radioboxStyle} />}
             label="Oracle"
           />
         </RadioGroup>

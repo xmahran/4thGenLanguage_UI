@@ -3,12 +3,19 @@ import EmptyState from "../../components/shared/EmptyState";
 import ErrorState from "../../components/shared/ErrorState";
 import Loader from "../../components/shared/Loader";
 import { useQuery } from "@tanstack/react-query";
-import { getAllItems } from "../../service/interfaceApi/itemsApi";
+import {
+  getAllItems,
+  getAllItemsBuyer,
+} from "../../service/interfaceApi/itemsApi";
 import Header from "../../components/shared/Header";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { checkValidity } from "../../service/interfaceApi/buyerApi";
 
-interface ItemsProps {}
-const Items: React.FC<ItemsProps> = () => {
+interface ItemsProps {
+  homepage?: boolean;
+}
+const Items: React.FC<ItemsProps> = ({ homepage }) => {
   const nav = useNavigate();
   const {
     data: items,
@@ -17,43 +24,61 @@ const Items: React.FC<ItemsProps> = () => {
     refetch: refetchItems,
   } = useQuery({
     queryKey: ["getAllItems"],
-    queryFn: () => getAllItems(),
+    queryFn: () => (homepage ? getAllItems() : getAllItemsBuyer()),
+  });
+  const {
+    data: verified,
+    isLoading: isLoadingVerified,
+    isError: isErrorVerified,
+  } = useQuery({
+    queryKey: ["getVerificationBuyer"],
+    queryFn: () => checkValidity(),
+    enabled: !homepage,
   });
 
   return (
     <div>
-      <Header title="Items" />
+      {!homepage && <Header title="Items" />}
       <div className="py-10">
-        {isLoadingItems ? (
+        {isLoadingItems || isLoadingVerified ? (
           <div className="mt-[20%]">
             <Loader size={60} />
           </div>
-        ) : isErrorItems ? (
+        ) : isErrorItems || isErrorVerified ? (
           <ErrorState
             title="An unknown error has occurred"
             subTitle="Retry the process"
             loading={false}
             onClick={() => refetchItems()}
           />
-        ) : items?.length === 0 ? (
+        ) : items?.length === 0 || (!verified && !homepage) ? (
           <EmptyState
             title="No items available"
-            subTitle="None of the sellers uploaded any item"
+            subTitle="None of the sellers uploaded any item or oracle didn't verify you yet"
             buttonTitle="OK"
             loading={false}
             onClick={() => {}}
           />
-        ) : (
+        ) : verified || homepage ? (
           <div className="grid grid-cols-3 justify-center items-center">
             {items?.map((item, index) => (
               <div key={index} className="flex justify-center">
                 <ItemCard
                   item={item}
-                  onClick={() => nav(item.id ? item.id + "" : 1 + "")}
+                  onClick={() =>
+                    !homepage
+                      ? nav(item.id ? item.id + "" : 1 + "")
+                      : toast.info("Please login to view item details", {
+                          position: "top-center",
+                          className: "toast-message",
+                        })
+                  }
                 />
               </div>
             ))}
           </div>
+        ) : (
+          ""
         )}
       </div>
     </div>
