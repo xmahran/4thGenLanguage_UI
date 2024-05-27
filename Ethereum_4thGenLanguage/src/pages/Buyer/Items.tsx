@@ -3,19 +3,13 @@ import EmptyState from "../../components/shared/EmptyState";
 import ErrorState from "../../components/shared/ErrorState";
 import Loader from "../../components/shared/Loader";
 import { useQuery } from "@tanstack/react-query";
-import {
-  getAllItems,
-  getAllItemsBuyer,
-} from "../../service/interfaceApi/itemsApi";
+import { getAllItemsBuyer } from "../../service/interfaceApi/itemsApi";
 import Header from "../../components/shared/Header";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import { checkValidity } from "../../service/interfaceApi/buyerApi";
 
-interface ItemsProps {
-  homepage?: boolean;
-}
-const Items: React.FC<ItemsProps> = ({ homepage }) => {
+interface ItemsProps {}
+const Items: React.FC<ItemsProps> = ({}) => {
   const nav = useNavigate();
   const {
     data: items,
@@ -24,7 +18,7 @@ const Items: React.FC<ItemsProps> = ({ homepage }) => {
     refetch: refetchItems,
   } = useQuery({
     queryKey: ["getAllItems"],
-    queryFn: () => (homepage ? getAllItems() : getAllItemsBuyer()),
+    queryFn: () => getAllItemsBuyer(),
   });
   const {
     data: verified,
@@ -33,12 +27,11 @@ const Items: React.FC<ItemsProps> = ({ homepage }) => {
   } = useQuery({
     queryKey: ["getVerificationBuyer"],
     queryFn: () => checkValidity(),
-    enabled: !homepage,
   });
 
   return (
     <div>
-      {!homepage && <Header title="Items" />}
+      <Header title="Items" />
       <div className="py-10">
         {isLoadingItems || isLoadingVerified ? (
           <div className="mt-[20%]">
@@ -51,7 +44,7 @@ const Items: React.FC<ItemsProps> = ({ homepage }) => {
             loading={false}
             onClick={() => refetchItems()}
           />
-        ) : items?.length === 0 || (!verified && !homepage) ? (
+        ) : items?.length === 0 || !verified ? (
           <EmptyState
             title="No items available"
             subTitle="None of the sellers uploaded any item or oracle didn't verify you yet"
@@ -59,20 +52,13 @@ const Items: React.FC<ItemsProps> = ({ homepage }) => {
             loading={false}
             onClick={() => {}}
           />
-        ) : verified || homepage ? (
+        ) : verified ? (
           <div className="grid grid-cols-3 justify-center items-center">
             {items?.map((item, index) => (
               <div key={index} className="flex justify-center">
                 <ItemCard
                   item={item}
-                  onClick={() =>
-                    !homepage
-                      ? nav(item.id ? item.id + "" : 1 + "")
-                      : toast.info("Please login to view item details", {
-                          position: "top-center",
-                          className: "toast-message",
-                        })
-                  }
+                  onClick={() => nav(item.id ? item.id + "" : 1 + "")}
                 />
               </div>
             ))}
